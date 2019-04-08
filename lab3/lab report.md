@@ -710,9 +710,8 @@ int main()
 
 ##### 4.2.5　说明
 
-```c
-以读进程为例，通过fifo_fd=open(FIFO,O_RDONLY | O_NONBLOCK)设置为非阻塞状态，fifo_fd=open(FIFO,O_RDONLY)设置为阻塞状态，对应四个进程分别为fifo_wb(阻塞)、fifo_rb(阻塞)、fifo_w(非阻塞)、fifo_r(非阻塞)
-```
+以读进程为例，通过`fifo_fd=open(FIFO,O_RDONLY | O_NONBLOCK)`设置为非阻塞状态，`fifo_fd=open(FIFO,O_RDONLY)`设置为阻塞状态，对应四个进程分别为fifo_wb(阻塞)、fifo_rb(阻塞)、fifo_w(非阻塞)、fifo_r(非阻塞)
+
 
 | 写进程  | 结果                            | 读进程  | 结果                       |
 | ------- | ------------------------------- | ------- | -------------------------- |
@@ -747,5 +746,5 @@ int main()
 
 ![](https://github.com/coconod/Operating-System-HW-/blob/master/lab3/images/%E9%9D%9E%E9%98%BB%E8%AF%BB%E9%9D%9E%E9%98%BB%E5%86%99.png)
 
-#### c）消息通信系统调用是否已经实现了同步机制？通过实验验证，发送者和接收者如何同步的。比如，在什么情况下，发送者会阻塞，什么情况下，接收者会阻塞？
+##### c）消息通信系统调用是否已经实现了同步机制？通过实验验证，发送者和接收者如何同步的。比如，在什么情况下，发送者会阻塞，什么情况下，接收者会阻塞？
 
