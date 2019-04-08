@@ -952,3 +952,110 @@ flag 为0表示阻塞方式，设置IPC_NOWAIT 表示非阻塞方式
 双非阻塞
 
 ![](https://github.com/coconod/Operating-System-HW-/blob/master/lab3/images/%E5%8F%8C%E9%9D%9E%E9%98%BB%E5%AE%A2%E6%88%B7%E6%9C%8D%E5%8A%A1.png)
+
+### 5.阅读Pintos操作系统，找到并阅读进程上下文切换的代码，说明实现的保存和恢复的上下文内容以及进程切换的工作流程。
+
+ `void timer_sleep`er(int64_t ticks)
+
+```ｃ
+/* Sleeps for approximately TICKS timer ticks.  Interrupts must
+   be turned on. */
+void timer_sleep (int64_t ticks)
+{
+  int64_t start = timer_ticks ();
+  ASSERT (intr_get_level () == INTR_ON);
+  while (timer_elapsed (start) < ticks)
+    thread_yield();
+}
+```
+
+  获取ticks的当前值返回，保证这个过程不被中断
+
+![](https://github.com/coconod/Operating-System-HW-/blob/master/lab3/images/timer_sleep.png)
+
+
+
+`thread.s`
+
+```assembly
+#### struct thread *switch_threads (struct thread *cur, struct thread *next);
+####
+#### Switches from CUR, which must be the running thread, to NEXT,
+#### which must also be running switch_threads(), returning CUR in
+#### NEXT's context.
+####
+#### This function works by assuming that the thread we're switching
+#### into is also running switch_threads().  Thus, all it has to do is
+#### preserve a few registers on the stack, then switch stacks and
+#### restore the registers.  As part of switching stacks we record the
+#### current stack pointer in CUR's thread structure.
+
+.globl switch_threads
+.func switch_threads
+switch_threads:
+    # Save caller's register state.
+    #
+    # Note that the SVR4 ABI allows us to destroy %eax, %ecx, %edx,
+    # but requires us to preserve %ebx, %ebp, %esi, %edi.  See
+    # [SysV-ABI-386] pages 3-11 and 3-12 for details.
+    #
+    # This stack frame must match the one set up by thread_create()
+    # in size.
+    pushl %ebx
+    pushl %ebp
+    pushl %esi
+    pushl %edi
+
+    # Get offsetof (struct thread, stack).
+.globl thread_stack_ofs
+    mov thread_stack_ofs, %edx
+
+    # Save current stack pointer to old thread's stack, if any.
+    movl SWITCH_CUR(%esp), %eax
+    movl %esp, (%eax,%edx,1)
+
+    # Restore stack pointer from new thread's stack.
+    movl SWITCH_NEXT(%esp), %ecx
+    movl (%ecx,%edx,1), %esp
+
+    # Restore caller's register state.
+    popl %edi
+    popl %esi
+    popl %ebp
+    popl %ebx
+        ret
+.endfunc
+
+
+/* switch_thread()'s stack frame. */
+struct switch_threads_frame 
+  {
+    uint32_t edi;               /*  0: Saved %edi. */
+    uint32_t esi;               /*  4: Saved %esi. */
+    uint32_t ebp;               /*  8: Saved %ebp. */
+    uint32_t ebx;               /* 12: Saved %ebx. */
+    void (*eip) (void);         /* 16: Return address. */
+    struct thread *cur;         /* 20: switch_threads()'s CUR argument. */
+    struct thread *next;        /* 24: switch_threads()'s NEXT argument. */
+  };
+```
+
+
+
+全局变量thread_stack_ofs记录线程和栈之间的关系， 线程切换有个保存现场的过程，先把当前的线程指针放到eax中， 并把线程指针保存在相对基地址偏移量为edx的地址中。切换到下一个线程的线程栈指针， 保存在ecx中， 再把这个线程相对基地址偏移量edx地址（上一次保存现场的时候存放的）放到esp当中继续执行。
+
+这里ecx, eax起容器的作用， edx指向当前现场保存的地址偏移量。就是保存当前线程状态， 恢复新线程之前保存的线程状态。
+
+然后再把4个寄存器拿出来， 这个是硬件设计要求的， 必须保护switch_threads_frame里面的寄存器才可以destroy掉eax, edx, ecx。然后到现在eax(函数返回值是eax)就是被切换的线程棧指针。
+
+由此得到一个结论， schedule先把当前线程放到就绪队列，然后把线程切换如果下一个线程和当前线程不一样的情况下。
+
+###### 总而言之
+
+thread_schedule_tail　获取当前线程， 分配恢复之前执行的状态和现场， 如果当前线程死亡就清空资源。 
+
+schedule　拿下一个线程切换过来继续运行。
+
+thread_yield其实就是把当前线程加入就绪队列里， 然后重新schedule， 注意这里如果ready队列为空的话当前线程会继续在cpu执行。
+
+最后回溯到我们最顶层的函数逻辑： timer_sleep就是在ticks时间内， 如果线程处于running状态就不断把他扔到就绪队列不让他执行。
