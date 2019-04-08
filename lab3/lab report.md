@@ -4,7 +4,7 @@
 
 ##### 1.1 实验源码
 
-‘1.c’
+`1.c`
 
 ```c
 #include<stdio.h>
@@ -81,7 +81,7 @@ return;
 
 ![](https://github.com/coconod/Operating-System-HW-/blob/master/lab3/images/4_1.png)
 
-![](https://github.com/coconod/Operating-System-HW-/blob/master/lab3/images/4_1(２).png])
+![](https://github.com/coconod/Operating-System-HW-/blob/master/lab3/images/4_1(2).png)
 
 ### 2.火车票余票数ticketCount初始值为1000，有一个售票线程，一个退票线程，各循环执行多次。添加同步机制，使得结果始终正确。要求多次测试添加同步机制前后的实验效果。
 
