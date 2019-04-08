@@ -4,15 +4,13 @@
 
 ##### 1.1 实验源码
 
-‘1.c’
+'1.c'
 
-’‘’c++
-
+'''c
 #include<stdio.h>
 #include<semaphore.h>
 #include<fcntl.h>
 #include<unistd.h>
-
 #include<stdlib.h>
 #include<pthread.h>
 
@@ -58,29 +56,25 @@ void main()
 			}
 		}
 		
-
-```
-}
-sem_close(p1_signal);
-sem_close(p2_signal);
-sem_close(p3_signal);
-sem_unlink("p1_signal");
-sem_unlink("p2_signal");
-sem_unlink("p3_signal");
-return;
-```
-
+	}
+	sem_close(p1_signal);
+	sem_close(p2_signal);
+	sem_close(p3_signal);
+	sem_unlink("p1_signal");
+	sem_unlink("p2_signal");
+	sem_unlink("p3_signal");
+	return;
 }
 
 '''
+
+
 
 ##### 1.2 流程示意图
 
 ![](https://github.com/coconod/Operating-System-HW-/blob/master/lab3/images/4_1%E6%B5%81%E7%A8%8B%E5%9B%BE.png)
 
-```
 四个进程必须是P1最先执行，P2、P3在P1执行完后互斥执行，P4最后执行。所以设置了三个信号量，p1执行完成后p1_signal为１，此时p2,p3可以进行，当其任意一个执行后，分别给postp2_signal或p3_signal加一，并重新给p1_signal减一，以让另一个进程能够进入，当p2,p3全部执行完后，p4由sem_wait(p2_signal)sem_wait(p3_signal）控制将最晚执行．
-```
 
 ##### 1.3 实验截图
 
