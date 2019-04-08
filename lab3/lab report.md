@@ -84,7 +84,146 @@ return;
 ![](https://github.com/coconod/Operating-System-HW-/blob/master/lab3/images/4_1(2).png)
 
 ### 2.火车票余票数ticketCount初始值为1000，有一个售票线程，一个退票线程，各循环执行多次。添加同步机制，使得结果始终正确。要求多次测试添加同步机制前后的实验效果。
+##### 2.1.1 未同步的实验源码
 
+`2.c`
+
+```c
+#include<stdlib.h>
+#include<stdio.h>
+#include<pthread.h>
+
+int sales=110;
+int returns=20;
+int ticketCount=1000;
+int i=0,j=0;
+
+void* sale(){
+	int temp;
+	while(i<sales){
+		if(i%10==0){printf("售出%d张票，退回%d张票，剩余%d张票\n",i,j,ticketCount);}
+		i++;
+		temp=ticketCount;
+		pthread_yield();
+		temp=temp-1;
+		pthread_yield();
+		ticketCount=temp;		
+	}
+}
+
+void* refund(){
+	int temp;
+	while(j<returns){
+		if(j%10==0){printf("售出%d张票，退回%d张票，剩余%d张票\n",i,j,ticketCount);}
+		j++;
+		temp=ticketCount;
+		pthread_yield();
+		temp=temp+1;
+		pthread_yield();
+		ticketCount=temp;
+	}
+}
+
+int main()
+{
+	printf("初始票数为：%d\n",ticketCount);
+	printf("原有1000张票，售票110张，退票20张\n");
+	pthread_t p1,p2;
+	pthread_create(&p1,NULL,sale,NULL);
+	pthread_create(&p2,NULL,refund,NULL);
+	pthread_join(p1,NULL);
+	pthread_join(p2,NULL);
+	printf("最终票数为：%d\n",ticketCount);
+	return 0;
+}
+```
+
+##### 2.1.2 说明
+
+由于没有利用信号量进行控制，售票退票进程执行过程中会因为混乱而在读取修改ticketCount时出现错误，而导致最终票数与正确值偏差较大。
+
+
+
+##### 2.1.3 运行截图
+
+第一次运行：
+
+![](https://github.com/coconod/Operating-System-HW-/blob/master/lab3/images/%E6%9C%AA%E6%B7%BB%E5%8A%A0%E5%90%8C%E6%AD%A51.png)
+
+第二次运行：
+
+![](https://github.com/coconod/Operating-System-HW-/blob/master/lab3/images/%E6%9C%AA%E6%B7%BB%E5%8A%A0%E5%90%8C%E6%AD%A52.png)
+
+##### 2.2.1 添加同步的源代码
+
+`2_1.c`
+
+```c
+#include<stdlib.h>
+#include<stdio.h>
+#include<pthread.h>
+#include<semaphore.h>
+#include<fcntl.h>
+int sales=110;
+int returns=20;
+int ticketCount=1000;
+int i=0,j=0;
+sem_t *mutex;
+void* sale(){
+	int temp;
+	while(i<sales){
+		sem_wait(mutex);
+		if(i%10==0){printf("售出%d张票，退回%d张票，剩余%d张票\n",i,j,ticketCount);}
+		i++;
+		temp=ticketCount;
+		pthread_yield();
+		temp=temp-1;
+		pthread_yield();
+		ticketCount=temp;
+		sem_post(mutex);		
+	}
+}
+
+void* refund(){
+	int temp;
+	while(j<returns){
+		sem_wait(mutex);
+		if(j%10==0){printf("售出%d张票，退回%d张票，剩余%d张票\n",i,j,ticketCount);}
+		j++;
+		temp=ticketCount;
+		pthread_yield();
+		temp=temp+1;
+		pthread_yield();
+		ticketCount=temp;
+		sem_post(mutex);
+	}
+}
+
+int main()
+{
+	mutex=sem_open("mutex",O_CREAT,0666,1);
+	printf("初始票数为：%d\n",ticketCount);
+	printf("原有1000张票，售票110张，退票20张\n");
+	pthread_t p1,p2;
+	pthread_create(&p1,NULL,sale,NULL);
+	pthread_create(&p2,NULL,refund,NULL);
+	pthread_join(p1,NULL);
+	pthread_join(p2,NULL);
+	printf("最终票数为：%d\n",ticketCount);
+	sem_close(mutex);
+	sem_unlink("mutex");
+	return 0;
+}
+```
+
+
+##### 2.2.2 说明
+
+添加信号量作为同步机制后，售票和退票操作都是原子操作，不再会由于操作混乱而令ticketCount出错，在此代码下，输出结果正确。
+
+##### 2.2.3实验截图
+
+![](https://github.com/coconod/Operating-System-HW-/blob/master/lab3/images/%E6%B7%BB%E5%8A%A0%E5%90%8C%E6%AD%A5.png)
 
 
 ### 3.一个生产者一个消费者线程同步。设置一个线程共享的缓冲区， char buf[10]。一个线程不断从键盘输入字符到buf,一个线程不断的把buf的内容输出到显示器。要求输出的和输入的字符和顺序完全一致。（在输出线程中，每次输出睡眠一秒钟，然后以不同的速度输入测试输出是否正确）。要求多次测试添加同步机制前后的实验效果。)
