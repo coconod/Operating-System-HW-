@@ -227,7 +227,73 @@ int main()
 
 
 ### 3.一个生产者一个消费者线程同步。设置一个线程共享的缓冲区， char buf[10]。一个线程不断从键盘输入字符到buf,一个线程不断的把buf的内容输出到显示器。要求输出的和输入的字符和顺序完全一致。（在输出线程中，每次输出睡眠一秒钟，然后以不同的速度输入测试输出是否正确）。要求多次测试添加同步机制前后的实验效果。)
+##### 3.1 实验源码
 
+`3.c`
+
+```c
+#include<stdlib.h>
+#include<unistd.h>
+#include<stdio.h>
+#include<pthread.h>
+#include<semaphore.h>
+#include<fcntl.h>
+
+char buf[10];
+sem_t *empty1,*full;
+void* input(void *arg){
+	int i=0;
+	while(1){
+		sem_wait(empty1);
+		scanf("%c",&buf[i]);
+		i=(i+1)%10;	
+		sem_post(full);	
+		sleep(1);
+	}
+}
+
+void* output(void *arg){
+	int i=0;
+       while(1){
+		sem_wait(full);		
+		printf("输出：%c\n",buf[i]);
+		i=(i+1)%10;
+		sem_post(empty1);
+		sleep(1);
+	}
+}
+
+int main(int argc,char *argv[]){
+	empty1=sem_open("empty",O_CREAT,0666,10);
+	full=sem_open("full",O_CREAT,0666,0);
+	pthread_t p1,p2;
+	pthread_create(&p1,NULL,input,NULL);
+	pthread_create(&p2,NULL,output,NULL);
+	pthread_join(p1,NULL);
+	pthread_join(p2,NULL);
+	sem_close(empty1);
+	sem_close(full);
+	sem_unlink("empty");
+	sem_unlink("full");
+	return 0;
+}
+```
+
+
+
+##### 3.2 说明
+
+设置empty1和full两个信号量，empty初始设置为10，full初始为0。
+每读进一个输入，sem_wait(empty1)和sem_post(full)分别令empty1减1和full加1，代表缓存空间空闲位置减一，被占用位置加一。
+同样每输出一个，sem_wait(full)和sem_post(empty1)分别令full减1和empty1加1，代表缓存空间被占用位置减一，空闲位置加一。
+以此达到同步的目的。
+由于数组一共申请了十个char类型的空间，在输入输出时需要对游标i进行模10操作。
+
+##### 3.3 实验截图
+
+![](https://github.com/coconod/Operating-System-HW-/blob/master/lab3/images/3.png)
+
+![](https://github.com/coconod/Operating-System-HW-/blob/master/lab3/images/3_2.png)
 
 
 ### 4.进程通信问题。阅读并运行共享内存、管道、消息队列三种机制的代码
