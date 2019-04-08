@@ -4,13 +4,14 @@
 
 ##### 1.1 实验源码
 
-'1.c'
+‘1.c’
 
-'''c
+```c
 #include<stdio.h>
 #include<semaphore.h>
 #include<fcntl.h>
 #include<unistd.h>
+
 #include<stdlib.h>
 #include<pthread.h>
 
@@ -55,18 +56,18 @@ void main()
 				printf("I am the process P4\n");
 			}
 		}
-		
-	}
-	sem_close(p1_signal);
-	sem_close(p2_signal);
-	sem_close(p3_signal);
-	sem_unlink("p1_signal");
-	sem_unlink("p2_signal");
-	sem_unlink("p3_signal");
-	return;
+}
+sem_close(p1_signal);
+sem_close(p2_signal);
+sem_close(p3_signal);
+sem_unlink("p1_signal");
+sem_unlink("p2_signal");
+sem_unlink("p3_signal");
+return;
 }
 
-'''
+
+```
 
 
 
