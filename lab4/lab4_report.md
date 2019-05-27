@@ -442,3 +442,11 @@ void PBA() {
 	cout << "PBA:\t缺页率:" << pr << "\t" << "时间开销:" << double(t2 - t1) / CLOCKS_PER_SEC << endl;
 }
 ```
+## ***实验运行结果分析***
+#### **实验运行截图：**
+##### 截图1
+<img src="https://github.com/coconod/Operating-System-HW-/blob/master/lab4/images/%E6%88%AA%E5%9B%BE.PNG?raw=true" height="50%" width="50%"> 
+##### 截图2
+<img src="https://github.com/coconod/Operating-System-HW-/blob/master/lab4/images/%E6%88%AA%E5%9B%BE2.PNG?raw=true" height="50%" width="50%"> 
+#### 结果分析
+##### &#8195;&#8195;由结果明显得到OPT的缺页率最低，但是由于遍历剩下所有待访问页面时间开销很大，由于该算法不可实现，仅在此作为一个对比项。改进CLOCK、LRU、FIFO、PBA四种算法，时间开销相仿，PBA的时间开销略高（由于并没有I/O时间模拟），缺页率略微低一些，由于PBA的缓存块在实际中应该是多个进程公用，在此实验全部分配给一个进程，所以缺页率必然会有所降低，所以此结果并不具备明显代表性。
