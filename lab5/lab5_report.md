@@ -765,3 +765,7 @@ int write(int index, int mem_area, int count)
 
 ## 4 测试
 ##### &#8195;&#8195;为了能够对我们的模拟系统进行测试，请编写一个操纵文件系统的外壳程序或者一个菜单驱动系统。为了能够对我们的模拟系统进行测试，请编写一个操纵文件系统的外壳程序或者一个菜单驱动系统。
+
+<img src="https://github.com/coconod/Operating-System-HW-/blob/master/lab5/image/menu.PNG?raw=true" height="40%" width="40%"> 
+<img src="https://github.com/coconod/Operating-System-HW-/blob/master/lab5/image/create.PNG?raw=true" height="40%" width="40%"> 
+<img src="https://github.com/coconod/Operating-System-HW-/blob/master/lab5/image/write.PNG?raw=true" height="40%" width="40%"> 
